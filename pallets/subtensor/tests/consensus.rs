@@ -13,7 +13,8 @@ use rand::{distributions::Uniform, rngs::StdRng, seq::SliceRandom, thread_rng, R
 use sp_core::U256;
 use sp_runtime::DispatchError;
 use std::time::Instant;
-use substrate_fixed::types::I32F32;
+use substrate_fixed::types::{I32F32, I64F64};
+use substrate_fixed::transcendental::{cos, ln, sqrt, PI};
 
 mod mock;
 

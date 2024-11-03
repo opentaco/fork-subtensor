@@ -53,42 +53,42 @@ fn normalize_weights(mut weights: Vec<u16>) -> Vec<u16> {
     weights
 }
 
-// // Return as usize an I32F32 ratio of a usize input, avoiding the 0% and 100% extremes.
-// fn non_extreme_fixed_ratio(ratio: I32F32, total: usize) -> usize {
-//     if total == 0 {
-//         return total;
-//     }
-//     let mut subset: usize = (ratio * I32F32::from_num(total)).to_num::<usize>();
-//     if subset == 0 {
-//         subset = 1;
-//     } else if subset == total {
-//         subset = total - 1;
-//     }
-//     return subset;
-// }
+// Return as usize an I32F32 ratio of a usize input, avoiding the 0% and 100% extremes.
+fn non_extreme_fixed_ratio(ratio: I32F32, total: usize) -> usize {
+    if total == 0 {
+        return total;
+    }
+    let mut subset: usize = (ratio * I32F32::from_num(total)).to_num::<usize>();
+    if subset == 0 {
+        subset = 1;
+    } else if subset == total {
+        subset = total - 1;
+    }
+    return subset;
+}
 
-// // Box-Muller Transform converting two uniform random samples to a normal random sample.
-// fn normal(size: usize, rng: &mut StdRng, dist: &Uniform<u16>) -> Vec<I32F32> {
-//     let max: I32F32 = I32F32::from_num(u16::MAX);
-//     let two: I32F32 = I32F32::from_num(2);
-//     let eps: I32F32 = I32F32::from_num(0.000001);
-//     let pi: I32F32 = I32F32::from_num(PI);
+// Box-Muller Transform converting two uniform random samples to a normal random sample.
+fn normal(size: usize, rng: &mut StdRng, dist: &Uniform<u16>) -> Vec<I32F32> {
+    let max: I32F32 = I32F32::from_num(u16::MAX);
+    let two: I32F32 = I32F32::from_num(2);
+    let eps: I32F32 = I32F32::from_num(0.000001);
+    let pi: I32F32 = I32F32::from_num(PI);
 
-//     let uniform_u16: Vec<u16> = (0..(2 * size)).map(|_| rng.sample(&dist)).collect();
-//     let uniform: Vec<I32F32> = uniform_u16
-//         .iter()
-//         .map(|&x| I32F32::from_num(x) / max)
-//         .collect();
-//     let mut normal: Vec<I32F32> = vec![I32F32::from_num(0); size as usize];
+    let uniform_u16: Vec<u16> = (0..(2 * size)).map(|_| rng.sample(&dist)).collect();
+    let uniform: Vec<I32F32> = uniform_u16
+        .iter()
+        .map(|&x| I32F32::from_num(x) / max)
+        .collect();
+    let mut normal: Vec<I32F32> = vec![I32F32::from_num(0); size as usize];
 
-//     for i in 0..size {
-//         let u1: I32F32 = uniform[i] + eps;
-//         let u2: I32F32 = uniform[i + size] + eps;
-//         normal[i] = sqrt::<I32F32, I32F32>(-two * ln::<I32F32, I32F32>(u1).expect("")).expect("")
-//             * cos(two * pi * u2);
-//     }
-//     normal
-// }
+    for i in 0..size {
+        let u1: I32F32 = uniform[i] + eps;
+        let u2: I32F32 = uniform[i + size] + eps;
+        normal[i] = sqrt::<I32F32, I32F32>(-two * ln::<I32F32, I32F32>(u1).expect("")).expect("")
+            * cos(two * pi * u2);
+    }
+    normal
+}
 
 // Returns validators and servers uids with either blockwise, regular, or random interleaving.
 fn distribute_nodes(
@@ -268,141 +268,141 @@ fn init_run_epochs(
     // }
 }
 
-// // Generate a random graph that is split into a major and minor set, each setting specific weight on itself and the complement on the other.
-// fn split_graph(
-//     major_stake: I32F32,
-//     major_weight: I32F32,
-//     minor_weight: I32F32,
-//     weight_stddev: I32F32,
-//     validators_n: usize,
-//     network_n: usize,
-//     interleave: usize,
-// ) -> (
-//     Vec<u16>,
-//     Vec<u16>,
-//     Vec<u16>,
-//     Vec<u16>,
-//     Vec<u16>,
-//     Vec<u16>,
-//     Vec<u64>,
-//     Vec<Vec<(u16, u16)>>,
-//     I32F32,
-// ) {
-//     let servers_n: usize = network_n - validators_n;
-//     let major_servers_n: usize = non_extreme_fixed_ratio(major_stake, servers_n);
-//     let major_validators_n: usize = non_extreme_fixed_ratio(major_stake, validators_n);
+// Generate a random graph that is split into a major and minor set, each setting specific weight on itself and the complement on the other.
+fn split_graph(
+    major_stake: I32F32,
+    major_weight: I32F32,
+    minor_weight: I32F32,
+    weight_stddev: I32F32,
+    validators_n: usize,
+    network_n: usize,
+    interleave: usize,
+) -> (
+    Vec<u16>,
+    Vec<u16>,
+    Vec<u16>,
+    Vec<u16>,
+    Vec<u16>,
+    Vec<u16>,
+    Vec<u64>,
+    Vec<Vec<(u16, u16)>>,
+    I32F32,
+) {
+    let servers_n: usize = network_n - validators_n;
+    let major_servers_n: usize = non_extreme_fixed_ratio(major_stake, servers_n);
+    let major_validators_n: usize = non_extreme_fixed_ratio(major_stake, validators_n);
 
-//     let (validators, servers) = distribute_nodes(validators_n, network_n, interleave as usize);
-//     let major_validators: Vec<u16> = (0..major_validators_n).map(|i| validators[i]).collect();
-//     let minor_validators: Vec<u16> = (major_validators_n..validators_n)
-//         .map(|i| validators[i])
-//         .collect();
-//     let major_servers: Vec<u16> = (0..major_servers_n).map(|i| servers[i]).collect();
-//     let minor_servers: Vec<u16> = (major_servers_n..servers_n).map(|i| servers[i]).collect();
+    let (validators, servers) = distribute_nodes(validators_n, network_n, interleave as usize);
+    let major_validators: Vec<u16> = (0..major_validators_n).map(|i| validators[i]).collect();
+    let minor_validators: Vec<u16> = (major_validators_n..validators_n)
+        .map(|i| validators[i])
+        .collect();
+    let major_servers: Vec<u16> = (0..major_servers_n).map(|i| servers[i]).collect();
+    let minor_servers: Vec<u16> = (major_servers_n..servers_n).map(|i| servers[i]).collect();
 
-//     let zero: I32F32 = I32F32::from_num(0);
-//     let one: I32F32 = I32F32::from_num(1);
-//     let stddev: I32F32 = I32F32::from_num(0.3);
-//     let total_stake: I64F64 = I64F64::from_num(21_000_000_000_000_000 as u64);
-//     let mut rng = StdRng::seed_from_u64(0); // constant seed so weights over multiple runs are equal
-//     let dist = Uniform::new(0, u16::MAX);
+    let zero: I32F32 = I32F32::from_num(0);
+    let one: I32F32 = I32F32::from_num(1);
+    let stddev: I32F32 = I32F32::from_num(0.3);
+    let total_stake: I64F64 = I64F64::from_num(21_000_000_000_000_000 as u64);
+    let mut rng = StdRng::seed_from_u64(0); // constant seed so weights over multiple runs are equal
+    let dist = Uniform::new(0, u16::MAX);
 
-//     let mut stake: Vec<u64> = vec![0; network_n];
-//     let mut stake_fixed: Vec<I32F32> = vec![zero; network_n];
-//     for (ratio, vals) in vec![
-//         (major_stake, &major_validators),
-//         (one - major_stake, &minor_validators),
-//     ] {
-//         let mut sample = normal(vals.len(), &mut rng, &dist)
-//             .iter()
-//             .map(|x: &I32F32| {
-//                 let v: I32F32 = (stddev * x) + one;
-//                 if v < zero {
-//                     zero
-//                 } else {
-//                     v
-//                 }
-//             })
-//             .collect();
-//         inplace_normalize(&mut sample);
-//         for (i, &val) in vals.iter().enumerate() {
-//             stake[val as usize] =
-//                 (I64F64::from_num(ratio) * I64F64::from_num(sample[i]) * total_stake)
-//                     .to_num::<u64>();
-//             stake_fixed[val as usize] =
-//                 I32F32::from_num(I64F64::from_num(ratio) * I64F64::from_num(sample[i]));
-//         }
-//     }
+    let mut stake: Vec<u64> = vec![0; network_n];
+    let mut stake_fixed: Vec<I32F32> = vec![zero; network_n];
+    for (ratio, vals) in vec![
+        (major_stake, &major_validators),
+        (one - major_stake, &minor_validators),
+    ] {
+        let mut sample = normal(vals.len(), &mut rng, &dist)
+            .iter()
+            .map(|x: &I32F32| {
+                let v: I32F32 = (stddev * x) + one;
+                if v < zero {
+                    zero
+                } else {
+                    v
+                }
+            })
+            .collect();
+        inplace_normalize(&mut sample);
+        for (i, &val) in vals.iter().enumerate() {
+            stake[val as usize] =
+                (I64F64::from_num(ratio) * I64F64::from_num(sample[i]) * total_stake)
+                    .to_num::<u64>();
+            stake_fixed[val as usize] =
+                I32F32::from_num(I64F64::from_num(ratio) * I64F64::from_num(sample[i]));
+        }
+    }
 
-//     let mut weights: Vec<Vec<(u16, u16)>> = vec![vec![]; network_n as usize];
-//     let mut weights_fixed: Vec<Vec<I32F32>> = vec![vec![zero; network_n]; network_n];
-//     for (first, second, vals) in vec![
-//         (major_weight, one - major_weight, &major_validators),
-//         (one - minor_weight, minor_weight, &minor_validators),
-//     ] {
-//         for &val in vals {
-//             for (weight, srvs) in vec![(first, &major_servers), (second, &minor_servers)] {
-//                 let mut sample: Vec<I32F32> = normal(srvs.len(), &mut rng, &dist)
-//                     .iter()
-//                     .map(|x: &I32F32| {
-//                         let v: I32F32 = (weight_stddev * x) + one;
-//                         if v < zero {
-//                             zero
-//                         } else {
-//                             v
-//                         }
-//                     })
-//                     .collect();
-//                 inplace_normalize(&mut sample);
+    let mut weights: Vec<Vec<(u16, u16)>> = vec![vec![]; network_n as usize];
+    let mut weights_fixed: Vec<Vec<I32F32>> = vec![vec![zero; network_n]; network_n];
+    for (first, second, vals) in vec![
+        (major_weight, one - major_weight, &major_validators),
+        (one - minor_weight, minor_weight, &minor_validators),
+    ] {
+        for &val in vals {
+            for (weight, srvs) in vec![(first, &major_servers), (second, &minor_servers)] {
+                let mut sample: Vec<I32F32> = normal(srvs.len(), &mut rng, &dist)
+                    .iter()
+                    .map(|x: &I32F32| {
+                        let v: I32F32 = (weight_stddev * x) + one;
+                        if v < zero {
+                            zero
+                        } else {
+                            v
+                        }
+                    })
+                    .collect();
+                inplace_normalize(&mut sample);
 
-//                 for (i, &srv) in srvs.iter().enumerate() {
-//                     weights[val as usize].push((srv, fixed_proportion_to_u16(weight * sample[i])));
-//                     weights_fixed[val as usize][srv as usize] = weight * sample[i];
-//                 }
-//             }
-//             inplace_normalize(&mut weights_fixed[val as usize]);
-//         }
-//     }
+                for (i, &srv) in srvs.iter().enumerate() {
+                    weights[val as usize].push((srv, fixed_proportion_to_u16(weight * sample[i])));
+                    weights_fixed[val as usize][srv as usize] = weight * sample[i];
+                }
+            }
+            inplace_normalize(&mut weights_fixed[val as usize]);
+        }
+    }
 
-//     inplace_normalize(&mut stake_fixed);
+    inplace_normalize(&mut stake_fixed);
 
-//     // Calculate stake-weighted mean per server
-//     let mut weight_mean: Vec<I32F32> = vec![zero; network_n];
-//     for val in 0..network_n {
-//         if stake_fixed[val] > zero {
-//             for srv in 0..network_n {
-//                 weight_mean[srv] += stake_fixed[val] * weights_fixed[val][srv];
-//             }
-//         }
-//     }
+    // Calculate stake-weighted mean per server
+    let mut weight_mean: Vec<I32F32> = vec![zero; network_n];
+    for val in 0..network_n {
+        if stake_fixed[val] > zero {
+            for srv in 0..network_n {
+                weight_mean[srv] += stake_fixed[val] * weights_fixed[val][srv];
+            }
+        }
+    }
 
-//     // Calculate stake-weighted absolute standard deviation
-//     let mut weight_dev: Vec<I32F32> = vec![zero; network_n];
-//     for val in 0..network_n {
-//         if stake_fixed[val] > zero {
-//             for srv in 0..network_n {
-//                 weight_dev[srv] +=
-//                     stake_fixed[val] * (weight_mean[srv] - weights_fixed[val][srv]).abs();
-//             }
-//         }
-//     }
+    // Calculate stake-weighted absolute standard deviation
+    let mut weight_dev: Vec<I32F32> = vec![zero; network_n];
+    for val in 0..network_n {
+        if stake_fixed[val] > zero {
+            for srv in 0..network_n {
+                weight_dev[srv] +=
+                    stake_fixed[val] * (weight_mean[srv] - weights_fixed[val][srv]).abs();
+            }
+        }
+    }
 
-//     // Calculate rank-weighted mean of weight_dev
-//     let avg_weight_dev: I32F32 =
-//         weight_dev.iter().sum::<I32F32>() / weight_mean.iter().sum::<I32F32>();
+    // Calculate rank-weighted mean of weight_dev
+    let avg_weight_dev: I32F32 =
+        weight_dev.iter().sum::<I32F32>() / weight_mean.iter().sum::<I32F32>();
 
-//     (
-//         validators,
-//         servers,
-//         major_validators,
-//         minor_validators,
-//         major_servers,
-//         minor_servers,
-//         stake,
-//         weights,
-//         avg_weight_dev,
-//     )
-// }
+    (
+        validators,
+        servers,
+        major_validators,
+        minor_validators,
+        major_servers,
+        minor_servers,
+        stake,
+        weights,
+        avg_weight_dev,
+    )
+}
 
 // Test consensus guarantees with an epoch on a graph with 4096 nodes, of which the first 128 are validators, the graph is split into a major and minor set, each setting specific weight on itself and the complement on the other. Asserts that the major emission ratio >= major stake ratio.
 // #[test]
@@ -488,164 +488,101 @@ fn init_run_epochs(
 //     }
 // }
 
-// Test an epoch on an empty graph.
-// #[test]
-// fn test_overflow() {
-//     new_test_ext(1).execute_with(|| {
-//         log::info!("test_overflow:");
-//         let netuid: u16 = 1;
-//         add_network(netuid, 0, 0);
-//         SubtensorModule::set_max_allowed_uids(netuid, 3);
-//         SubtensorModule::increase_stake_on_coldkey_hotkey_account(
-//             &U256::from(0),
-//             &U256::from(0),
-//             10,
-//         );
-//         SubtensorModule::increase_stake_on_coldkey_hotkey_account(
-//             &U256::from(1),
-//             &U256::from(1),
-//             10,
-//         );
-//         SubtensorModule::increase_stake_on_coldkey_hotkey_account(
-//             &U256::from(2),
-//             &U256::from(2),
-//             10,
-//         );
-//         SubtensorModule::append_neuron(netuid, &U256::from(0), 0);
-//         SubtensorModule::append_neuron(netuid, &U256::from(1), 0);
-//         SubtensorModule::append_neuron(netuid, &U256::from(2), 0);
-//         SubtensorModule::set_validator_permit_for_uid(0, 0, true);
-//         SubtensorModule::set_validator_permit_for_uid(0, 1, true);
-//         SubtensorModule::set_validator_permit_for_uid(0, 2, true);
-//         assert_ok!(SubtensorModule::set_weights(
-//             RuntimeOrigin::signed(U256::from(0)),
-//             netuid,
-//             vec![0, 1, 2],
-//             vec![u16::MAX / 3, u16::MAX / 3, u16::MAX],
-//             0
-//         ));
-//         assert_ok!(SubtensorModule::set_weights(
-//             RuntimeOrigin::signed(U256::from(1)),
-//             netuid,
-//             vec![1, 2],
-//             vec![u16::MAX / 2, u16::MAX / 2],
-//             0
-//         ));
-//         assert_ok!(SubtensorModule::set_weights(
-//             RuntimeOrigin::signed(U256::from(2)),
-//             netuid,
-//             vec![2],
-//             vec![u16::MAX],
-//             0
-//         ));
-//         SubtensorModule::epoch(0, u64::MAX);
-//     });
-// }
+// Map the retention graph for consensus guarantees with an single epoch on a graph with 512 nodes, of which the first 64 are validators, the graph is split into a major and minor set, each setting specific weight on itself and the complement on the other.
+//
+// ```import torch
+// import matplotlib.pyplot as plt
+// from matplotlib.pyplot import cm
+// %matplotlib inline
+//
+// with open('finney_consensus_0.4.txt') as f:  # test output saved to finney_consensus.txt
+//     retention_map = eval(f.read())
+//
+// major_ratios = {}
+// avg_weight_devs = {}
+// for major_stake, major_weight, minor_weight, avg_weight_dev, major_ratio in retention_map:
+//     major_stake = f'{major_stake:.2f}'
+//     maj, min = int(round(50 * major_weight)), int(round(50 * minor_weight))
+//     avg_weight_devs.setdefault(major_stake, torch.zeros((51, 51)))
+//     avg_weight_devs[major_stake][maj][min] = avg_weight_dev
+//     major_ratios.setdefault(major_stake, torch.zeros((51, 51)))
+//     major_ratios[major_stake][maj][min] = major_ratio
+//
+// _x = torch.linspace(0, 1, 51); _y = torch.linspace(0, 1, 51)
+// x, y = torch.meshgrid(_x, _y, indexing='ij')
+//
+// fig = plt.figure(figsize=(6, 6), dpi=70); ax = fig.gca()
+// ax.set_xticks(torch.arange(0, 1, 0.05)); ax.set_yticks(torch.arange(0, 1., 0.05))
+// ax.set_xticklabels([f'{_:.2f}'[1:] for _ in torch.arange(0, 1., 0.05)])
+// plt.grid(); plt.rc('grid', linestyle="dotted", color=[0.85, 0.85, 0.85])
+//
+// isolate = ['0.60']; stakes = [0.51, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99]
+// colors = cm.viridis(torch.linspace(0, 1, len(stakes) + 1))
+// for i, stake in enumerate(stakes):
+//     contours = plt.contour(x, y, major_ratios[f'{stake:.2f}'], levels=[0., stake], colors=[colors[i + 1]])
+//     if f'{stake:.2f}' in isolate:
+//         contours.collections[1].set_linewidth(3)
+//     plt.clabel(contours, inline=True, fontsize=10)
+//
+// plt.title(f'Major emission [$stake_{{maj}}=emission_{{maj}}$ retention lines]')
+// plt.ylabel('Minor self-weight'); plt.xlabel('Major self-weight'); plt.show()
+// ```
+#[test]
+fn map_consensus_guarantees() {
+    let netuid: u16 = 1;
+    let network_n: u16 = 512;
+    let validators_n: u16 = 64;
+    let epochs: u16 = 1;
+    let interleave = 0;
+    let weight_stddev: I32F32 = fixed(0.4);
+    println!("[");
+    for _major_stake in vec![0.51, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99] {
+        let major_stake: I32F32 = I32F32::from_num(_major_stake);
+        for _major_weight in 0..51 {
+            let major_weight: I32F32 = I32F32::from_num(50 - _major_weight) / I32F32::from_num(50);
+            for _minor_weight in 0..51 {
+                let minor_weight: I32F32 =
+                    I32F32::from_num(50 - _minor_weight) / I32F32::from_num(50);
+                let (
+                    validators,
+                    servers,
+                    major_validators,
+                    minor_validators,
+                    major_servers,
+                    minor_servers,
+                    stake,
+                    weights,
+                    avg_weight_dev,
+                ) = split_graph(
+                    major_stake,
+                    major_weight,
+                    minor_weight,
+                    weight_stddev,
+                    validators_n as usize,
+                    network_n as usize,
+                    interleave as usize,
+                );
 
-// Test an epoch on an empty graph.
-// #[test]
-// fn test_nill_epoch_subtensor() {
-//     new_test_ext(1).execute_with(|| {
-//         log::info!("test_nill_epoch:");
-//         SubtensorModule::epoch(0, 0);
-//     });
-// }
+                new_test_ext(1).execute_with(|| {
+					init_run_epochs(netuid, network_n, &validators, &servers, epochs, 1, true, &stake, true, &weights, true, false, 0, true);
 
-// // Map the retention graph for consensus guarantees with an single epoch on a graph with 512 nodes, of which the first 64 are validators, the graph is split into a major and minor set, each setting specific weight on itself and the complement on the other.
-// //
-// // ```import torch
-// // import matplotlib.pyplot as plt
-// // from matplotlib.pyplot import cm
-// // %matplotlib inline
-// //
-// // with open('finney_consensus_0.4.txt') as f:  # test output saved to finney_consensus.txt
-// //     retention_map = eval(f.read())
-// //
-// // major_ratios = {}
-// // avg_weight_devs = {}
-// // for major_stake, major_weight, minor_weight, avg_weight_dev, major_ratio in retention_map:
-// //     major_stake = f'{major_stake:.2f}'
-// //     maj, min = int(round(50 * major_weight)), int(round(50 * minor_weight))
-// //     avg_weight_devs.setdefault(major_stake, torch.zeros((51, 51)))
-// //     avg_weight_devs[major_stake][maj][min] = avg_weight_dev
-// //     major_ratios.setdefault(major_stake, torch.zeros((51, 51)))
-// //     major_ratios[major_stake][maj][min] = major_ratio
-// //
-// // _x = torch.linspace(0, 1, 51); _y = torch.linspace(0, 1, 51)
-// // x, y = torch.meshgrid(_x, _y, indexing='ij')
-// //
-// // fig = plt.figure(figsize=(6, 6), dpi=70); ax = fig.gca()
-// // ax.set_xticks(torch.arange(0, 1, 0.05)); ax.set_yticks(torch.arange(0, 1., 0.05))
-// // ax.set_xticklabels([f'{_:.2f}'[1:] for _ in torch.arange(0, 1., 0.05)])
-// // plt.grid(); plt.rc('grid', linestyle="dotted", color=[0.85, 0.85, 0.85])
-// //
-// // isolate = ['0.60']; stakes = [0.51, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99]
-// // colors = cm.viridis(torch.linspace(0, 1, len(stakes) + 1))
-// // for i, stake in enumerate(stakes):
-// //     contours = plt.contour(x, y, major_ratios[f'{stake:.2f}'], levels=[0., stake], colors=[colors[i + 1]])
-// //     if f'{stake:.2f}' in isolate:
-// //         contours.collections[1].set_linewidth(3)
-// //     plt.clabel(contours, inline=True, fontsize=10)
-// //
-// // plt.title(f'Major emission [$stake_{{maj}}=emission_{{maj}}$ retention lines]')
-// // plt.ylabel('Minor self-weight'); plt.xlabel('Major self-weight'); plt.show()
-// // ```
-// // #[test]
-// fn _map_consensus_guarantees() {
-//     let netuid: u16 = 1;
-//     let network_n: u16 = 512;
-//     let validators_n: u16 = 64;
-//     let epochs: u16 = 1;
-//     let interleave = 0;
-//     let weight_stddev: I32F32 = fixed(0.4);
-//     println!("[");
-//     for _major_stake in vec![0.51, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99] {
-//         let major_stake: I32F32 = I32F32::from_num(_major_stake);
-//         for _major_weight in 0..51 {
-//             let major_weight: I32F32 = I32F32::from_num(50 - _major_weight) / I32F32::from_num(50);
-//             for _minor_weight in 0..51 {
-//                 let minor_weight: I32F32 =
-//                     I32F32::from_num(50 - _minor_weight) / I32F32::from_num(50);
-//                 let (
-//                     validators,
-//                     servers,
-//                     major_validators,
-//                     minor_validators,
-//                     major_servers,
-//                     minor_servers,
-//                     stake,
-//                     weights,
-//                     avg_weight_dev,
-//                 ) = split_graph(
-//                     major_stake,
-//                     major_weight,
-//                     minor_weight,
-//                     weight_stddev,
-//                     validators_n as usize,
-//                     network_n as usize,
-//                     interleave as usize,
-//                 );
-
-//                 new_test_ext(1).execute_with(|| {
-// 					init_run_epochs(netuid, network_n, &validators, &servers, epochs, 1, true, &stake, true, &weights, true, false, 0, true);
-
-// 					let mut major_emission: I64F64 = I64F64::from_num(0);
-// 					let mut minor_emission: I64F64 = I64F64::from_num(0);
-// 					for set in vec![major_validators, major_servers] {
-// 						for uid in set {
-// 							major_emission += I64F64::from_num(SubtensorModule::get_emission_for_uid( netuid, uid ));
-// 						}
-// 					}
-// 					for set in vec![minor_validators, minor_servers] {
-// 						for uid in set {
-// 							minor_emission += I64F64::from_num(SubtensorModule::get_emission_for_uid( netuid, uid ));
-// 						}
-// 					}
-// 					let major_ratio: I32F32 = I32F32::from_num(major_emission / (major_emission + minor_emission));
-// 					println!("[{major_stake}, {major_weight:.2}, {minor_weight:.2}, {avg_weight_dev:.3}, {major_ratio:.3}], ");
-// 				});
-//             }
-//         }
-//     }
-//     println!("]");
-// }
+					let mut major_emission: I64F64 = I64F64::from_num(0);
+					let mut minor_emission: I64F64 = I64F64::from_num(0);
+					for set in vec![major_validators, major_servers] {
+						for uid in set {
+							major_emission += I64F64::from_num(SubtensorModule::get_emission_for_uid( netuid, uid ));
+						}
+					}
+					for set in vec![minor_validators, minor_servers] {
+						for uid in set {
+							minor_emission += I64F64::from_num(SubtensorModule::get_emission_for_uid( netuid, uid ));
+						}
+					}
+					let major_ratio: I32F32 = I32F32::from_num(major_emission / (major_emission + minor_emission));
+					println!("[{major_stake}, {major_weight:.2}, {minor_weight:.2}, {avg_weight_dev:.3}, {major_ratio:.3}], ");
+				});
+            }
+        }
+    }
+    println!("]");
+}

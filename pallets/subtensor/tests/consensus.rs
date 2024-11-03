@@ -310,7 +310,7 @@ fn split_graph(
         (major_stake, &major_validators),
         (one - major_stake, &minor_validators),
     ] {
-        let mut sample = normal(vals.len(), &mut rng, &dist)
+        let mut sample: Vec<I32F32> = normal(vals.len(), &mut rng, &dist)
             .iter()
             .map(|x: &I32F32| {
                 let v: I32F32 = (stddev * x) + one;

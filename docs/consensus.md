@@ -112,6 +112,61 @@ let mut ema_bonds: Vec<Vec<I32F32>> = mat_ema( &bonds_delta, &bonds, alpha );  /
 let mut dividends: Vec<I32F32> = inplace_normalize(matmul_transpose( &ema_bonds, &incentive ));  // Validator reward
 ```
 
+### Monte Carlo simulations
+
+We consider a two-team game between (protagonist) honest stake ($0.5< S_H\le 1$) and (adversarial) cabal stake ($1 - S_H$), with $|H|$ honest and $|C|$ cabal players, that have $S_H = \sum_{i\in H}S_i$ honest stake and $1-S_H = \sum_{i\in C}S_i$ cabal stake.
+
+#### Network sizing
+
+A network size of $N=|H|+|C|=(|H_V|+|H_S|)+(|C_V|+|C_S|)=512$ and validator count of $|H_V|+|C_V|=64$ is considered for consensus guarantee experiments, and the honest/cabal ratio $|H|/N=S_H$ reflects the honest stake ratio $S_H$, but modifying extremes to ensure that each subset has at least one validator and at least one server.
+
+#### Stake sampling
+
+For the Monte Carlo simulations we use Gaussian distributions for stake and weight assignments, and ensure that the honest/cabal ratios are met. Note that stake is only assigned to validator nodes $H_V$ and $C_V$ and not servers.
+
+Firstly, we sample initial validator ($i\in H_V\cup C_V$) stake values $S'_i \sim \mathcal{N}(1,\sigma_S^{2})$ with a typical $\sigma_S=0.3$ standard deviation, followed by clamping to avoid negative stake:
+
+$$S'_i = \begin{cases}
+x & \text{if } x \sim \mathcal{N}(1, \sigma_S^2), x \ge 0 \\
+0 & \text{if } x \sim \mathcal{N}(1, \sigma_S^2), x < 0
+\end{cases}$$
+
+Then we normalize each honest/cabal subset and multiply by its stake proportion, which thus gives an overall normalized stake and the correct stake ratio for each subset:
+
+$$S_{i\in H_V} = S_H \cdot S'\_i \left/ \sum_{k\in H_V} S'\_k\right.\qquad\qquad S_{i\in C_V} = (1-S_H)\cdot S'\_i \left/ \sum_{k\in C_V}S'\_k\right.$$
+
+#### Weight sampling
+
+Similarly, we randomize the weights that validators $H_V,C_V$ set on servers $H_S,C_S$.
+Specifically, honest players $i\in H$ set $W_H = \sum_{j\in H}W_{ij}$ self-weight and $1-W_H = \sum_{j\in C}W_{ij}$ weight on cabal players, while cabal players $i\in C$ set $W_C = \sum_{j\in C}W_{ij}$ self-weight and $1-W_C = \sum_{j\in H}W_{ij}$ weight on honest players.
+
+We firstly sample initial weights $W'_{ij} \sim \mathcal{N}(1,\sigma_W^{2})$ with various standard deviations ranging in $0\ge\sigma_W\ge0.4$, but then clamping to avoid negative weights:
+
+$$W'_{ij} = \begin{cases}
+x & \text{if } x \sim \mathcal{N}(1, \sigma_S^2), x \geq 0 \\
+0 & \text{if } x \sim \mathcal{N}(1, \sigma_S^2), x < 0
+\end{cases}$$
+
+Weight setting between the two subsets forms quadrants $H_V\rightarrow H_S$, $H_V\rightarrow C_S$, $C_V\rightarrow H_S$, and $C_V\rightarrow C_S$, so we ensure those weight ratios are met by normalizing each weight subset and multiplying by the corresponding quadrant ratio:
+
+$$W_{i\in H_V, j\in H_S} = W_H\cdot W'\_{ij} \left/ \sum_{k\in H_S}W'\_{ik}\right.\qquad\qquad W_{i\in H_V, j\in C_S} = (1-W_H)\cdot W'\_{ij} \left/ \sum_{k\in C_S}W'\_{ik}\right.$$
+
+$$W_{i\in C_V, j\in H_S} = (1-W_C)\cdot W'\_{ij} \left/ \sum_{k\in H_S}W'\_{ik}\right.\qquad\qquad W_{i\in C_V, j\in C_S} = W_C\cdot W'\_{ij} \left/ \sum_{k\in C_S}W'\_{ik}\right.$$
+
+#### Emission calculation
+
+Given the simulation parameters of the network size, validator count, a defined major/honest stake $S_H$, a defined major/honest utility $W_H$, and a defined minor/cabal self-weight $W_C$, we have now instantiated the network with randomly sampled stake and weights and can proceed with an emission calculation.
+
+We calculate the consensus $\overline{W_j} = \arg \max_w \left( \sum_i S_i \cdot \left\lbrace W_{ij} \ge w \right\rbrace \ge \kappa \right)$ for each server $j$, and calculate consensus-clipped weights $\overline{W_{ij}} = \min( W_{ij}, \overline{W_j} )$. This then gives us the adjusted weights that offers a measure of protection against reward manipulation.
+
+To calculate emissions for this epoch, we firstly calculate server rank $R_j = \sum_i S_i \cdot \overline{W_{ij}}$ then incentive $I_j = R_j / \sum_k R_k$, as well as validator bonds $\Delta B_{ij} = S_i \cdot \widetilde{W_{ij}} \left/ \left( \sum_k S_k \cdot \widetilde{W_{kj}} \right) \right.$ and rewards $D_i = \sum_j B_{ij} \cdot I_j$.
+
+Then we add up server incentive and validator bonds over honest nodes to obtain honest emission $E_H = \xi \cdot D_{i\in H} + (1-\xi) \cdot I_{i\in H}$ with a typical validator reward ratio of $\xi=0.5$.
+The objective is to prove major stake retention $S_H\ge E_H$ for a single epoch, which by extension proves retention over many epochs due to additive nature of EMA bonds, so we do not bother with validator EMA bonds in these experiments.
+
+The honest objective $S_H\le E_H$ at least retains scoring power $S_H$ over all action transitions in the game, otherwise when $E_H\le S_H$ honest emission will erode to 0 over time, despite a starting condition of $0.5\lt S_H$.
+
+
 ### Consensus guarantees
 Yuma Consensus guarantees honest majority stake retention $S_H\le E_H$ even under worst-case adversarial attacks, given sufficiently large honest utility $W_H$. The specific honest stake and utility pairs that delineate the guarantees are complicated by natural variances inside large realistic networks.
 Therefore, we use extensive random sampling simulations (Monte Carlo studies) of large realistic networks and subject them to varying degrees of adversarial attacks, and calculate comprehensive consensus guarantees under representative conditions.
@@ -138,9 +193,11 @@ A compound plot then combines all the highlighted $S_H=E_H$ contours from indivi
 Retention graphs like these comprehensively capture consensus guarantees across all primary conditions, and we utilize these to analyze the effect of consensus hyperparameters.
 Subtensor integration tests run Monte Carlo simulations of large realistic networks under adversarial conditions, and constructs retention profiles to confirm consensus guarantees of the actual blockchain implementation.
 
-Retention profiles are reproducible by running [`_map_consensus_guarantees`](../pallets/subtensor/tests/epoch.rs) (decorate with `#[test]`).
+Retention profiles are reproducible by running test [`map_consensus_guarantees()`](../pallets/subtensor/tests/consensus.rs) and plotting with [`map_consensus.py`](../scripts/map_consensus.py).
 ```bash
-RUST_BACKTRACE=1 SKIP_WASM_BUILD=1 cargo test -- _map_consensus_guarantees --exact --nocapture > consensus.txt
+RUST_BACKTRACE=1 SKIP_WASM_BUILD=1 RUSTFLAGS="-C opt-level=3" cargo test --manifest-path=pallets/subtensor/Cargo.toml --test consensus -- map_consensus_guarantees --exact --nocapture > consensus.txt
+
+python scripts/map_consensus.py consensus.txt
 ```
 
 #### Subjectivity variance

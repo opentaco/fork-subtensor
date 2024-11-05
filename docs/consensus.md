@@ -255,3 +255,102 @@ We expect that more emission going to validators will improve security guarantee
 
 We set validation reward ratio at $\xi=0$, $0.25$, and $0.5$ and respectively observe 82%, 78%, 73% honest utility requirement for 60% honest stake preservation.
 This means that network security improves as the validation reward ratio is increased, although a significant server incentive ratio still needs to be maintained to ensure overall high utility.
+
+
+### Reproduce Consensus Plots (Runpod)
+
+This guide demonstrates how to reproduce consensus retention profile plots on a minimal Runpod CPU instance.
+
+#### 1. Deploy Runpod Instance
+
+Navigate to https://www.runpod.io/console/deploy and select the following:
+
+* **Pod Type:** CPU Pod, CPU5 (5.7 GHz • DDR5 RAM • NVMe)
+* **Instance Configuration:** Compute-Optimized ($0.07/hr, 2 vCPUs, 4GB RAM)
+
+**Important:**  Edit the template and set "Container Disk (Temporary)" to 20GB. This ensures sufficient disk space for the process.
+
+Retrieve the connection details, including the SSH command and port, under "Connect" -> "SSH over exposed TCP". You can optionally enable Jupyter access (`8888:localhost:8888`) if desired.  Connect to your instance via SSH:
+
+```bash
+ssh -L 8888:localhost:8888 root@<your_vps_ip_address> -p <your_vps_port> -i ~/.ssh/id_ed25519  # Replace placeholders
+```
+
+#### 2. Set up the Environment
+
+1. **Start a `tmux` session for persistence:**
+
+   ```bash
+   tmux
+   ```
+
+2. **Update system packages and install prerequisites (Python, Rust, and dependencies):**
+
+   ```bash
+   sudo apt-get update && sudo apt install -y build-essential clang curl git make libssl-dev llvm libudev-dev protobuf-compiler python3 python3-pip \
+   && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+   && source ~/.cargo/env && rustup default stable && rustup update \
+   && rustup target add wasm32-unknown-unknown \
+   && rustup toolchain install nightly \
+   && rustup target add --toolchain nightly wasm32-unknown-unknown
+
+   ```
+
+3. **Clone the forked Subtensor repository and checkout the relevant branch:**
+
+   ```bash
+   git clone https://github.com/opentaco/fork-subtensor.git 
+   cd fork-subtensor
+   git checkout map-consensus
+
+   ```
+
+
+#### 3. Simulate Networks and Generate Data
+
+The Subtensor integration tests simulate large, realistic networks under adversarial conditions to generate retention profiles that validate the blockchain's consensus guarantees.  Building takes about 10 minutes, and the actual test itself another 15 minutes approximately.
+
+
+```bash
+RUST_BACKTRACE=1 SKIP_WASM_BUILD=1 RUSTFLAGS="-C opt-level=3" cargo test --manifest-path=pallets/subtensor/Cargo.toml --test consensus -- map_consensus_guarantees --exact --nocapture > consensus.txt
+```
+This command runs the `map_consensus_guarantees` test and saves the output to `consensus.txt`.
+
+#### 4. Generate Contour Plots
+
+1.  **Create a Python virtual environment and install necessary libraries:**
+
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install numpy matplotlib jupyter
+
+    ```
+
+2.  **Run the plotting script:**
+
+    ```bash
+    python3 scripts/map_consensus.py consensus.txt
+    ```
+    This generates an SVG file named `consensus_plot.svg` in the current directory.
+
+
+#### 5. Explore and Modify (Optional)
+
+You can use Jupyter Notebook to interactively explore and modify the generated plots:
+
+1.  **Start Jupyter Notebook (on VPS):**
+    ```bash
+    jupyter notebook --allow-root --port=8888
+    ```
+
+2.  **Connect to Jupyter:** Open the provided URL (e.g., `http://localhost:8888/tree?token=...`) in your local workstation web browser.
+
+3.  **Modify the plotting script:** Edit `scripts/map_consensus.py` to customize the plots or download the SVG file.
+
+
+#### Disclaimer
+
+> This reproduction procedure is provided as a guide and may require adjustments depending on your specific VPS environment and configuration. While every effort has been made to ensure accuracy and completeness, variations in system setup, software versions, or network conditions could affect the results.
+>
+> Please exercise caution when executing commands with root privileges and ensure you understand the potential implications before proceeding.  The author assumes no responsibility for any issues arising from the use of this procedure.  If you encounter problems or have suggestions for improvement, please open an issue on this repository.

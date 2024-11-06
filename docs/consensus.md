@@ -21,7 +21,7 @@ High-volume, on-demand generative content (as in Bittensor) demands automated ev
 
 Yuma Consensus guarantees long-term network honesty despite persistent adversarial presence in high-volume subjective utility networks. It directly penalizes selfish scoring by down-correction to the majority consensus and slashing of cabal voting stake, and also penalizes low-scoring of honest servers via forfeited validator rewards when cabals don’t score at consensus.
 
-Yuma Consensus is adversarially-resilient when majority stake is honest, via stake-based median scoring that punishes selfish weighting by minority stake (cabal). We clip excess weight above the maximum weight supported by at least $\kappa$-majority stake, which ensures selfish weighting is corrected and reduces voting stake of cabal validators via bonds penalty $\beta$.
+Yuma Consensus is adversarially-resilient when majority stake is honest, via stake-based median scoring that punishes selfish weighting by minority stake (cabal). We clip excess weight above the maximum weight supported by at least $\kappa$-majority stake for incentive, and by at least $\lambda$-majority stake for validation rewards, which ensures selfish weighting is corrected and reduces voting stake of cabal validators.
 
 <img src="img/consensus_plots.png" width="1000">
 
@@ -53,9 +53,14 @@ We propose a consensus policy that uses stake-based median as consensus weight $
 The indicator function $\left\lbrace W_{ij} \ge w \right\rbrace$ adds stake $S_i$ if subnet validator $i$ supports a specific weight-level $w$ on server $j$.
 $$\overline{W_j}=\arg \max_w \left( \sum_i S_i \cdot \left\lbrace W_{ij} \ge w \right\rbrace \ge \kappa \right)\tag{3}$$
 
-The consensus policy applies weight correction $\overline{W_{ij}} = \min( W_{ij}, \overline{W_j} )$ to weight excess above consensus, which (i) restricts server incentive in case of selfish weighting, and (ii) penalizes selfish validators by slashing their voting stake (bonds) and validation rewards.
-The bonds penalty $\beta$ controls the degree to which weights for bonds are cut above consensus, which decides the penalty against subnet validator rewards.
-$$\widetilde{W_{ij}} = (1-\beta) \cdot W_{ij} + \beta \cdot \overline{W_{ij}}\tag{4}$$
+The consensus policy applies weight correction $\overline{W_{ij}} = \min( W_{ij}, \overline{W_j} )$ to weight excess above consensus, which restricts server incentive in case of selfish weighting.
+
+We obtain a greater degree of control with a separate consensus level for bonds, which is also a stake-based median as consensus weight $\widetilde{W_j}$, so that $\lambda$-stake (typically majority, i.e. $\lambda\ge 0.5$) decides the maximum supported weight on each subnet server $j$. 
+
+$$\widetilde{W_j}=\arg \max_w \left( \sum_i S_i \cdot \left\lbrace W_{ij} \ge w \right\rbrace \ge \lambda \right)\tag{8}$$
+
+The consensus for bonds policy applies weight correction $\widetilde{W_{ij}} = \min( W_{ij}, \widetilde{W_j} )$ to weight excess above consensus, which penalizes selfish validators by slashing their voting stake (bonds) and validation rewards.
+
 
 #### Validator bonding
 A subnet validator $i$ bonds with server $j$, where the instant bond value is the normalized bonds penalty clipped weighted stake.
@@ -86,9 +91,9 @@ Validation reward $D_i = \sum_j B_{ij} \cdot I_j$ is the subnet validator's EMA 
 | Server rank | $R_j = \sum_i S_i \cdot \overline{W_{ij}}$ | Sum of consensus-clipped weighted stake. |
 | Server incentive | $I_j = R_j / \sum_k R_k$ | Ratio of incentive for server $j$. |
 | Server trust | $T_j = R_j / P_j$ | Relative server weight remaining after consensus-clip. |
-| Validator trust | $T_{vi} =  \sum_j \overline{W_{ij}}$ | Relative validator weight remaining after consensus-clip. |
-| Bonds penalty | $\beta \in [0, 1]$ | Degree to cut bonds above consensus weight. |
-| Weight for bonds | $\widetilde{W_{ij}} = (1-\beta) \cdot W_{ij} + \beta \cdot \overline{W_{ij}}$ | Apply bonds penalty to weights. |
+| Server consensus weight (bonds) | $\widetilde{W_j} = \arg \max_w \left( \sum_i S_i \cdot \left\lbrace W_{ij} \ge w \right\rbrace \ge \lambda \right)$ | $\lambda$-stake supported maximum weight on server $j$. |
+| Consensus-clipped weight (bonds) | $\widetilde{W_{ij}} = \min( W_{ij}, \widetilde{W_j} )$ | Validator $i$ consensus-clipped weight (bonds) on server $j$. |
+| Validator trust | $T_{vi} =  \sum_j \widetilde{W_{ij}}$ | Relative validator weight remaining after consensus-clip. |
 | Validator bond | $\Delta B_{ij} = S_i \cdot \widetilde{W_{ij}} \left/ \left( \sum_k S_k \cdot \widetilde{W_{kj}} \right) \right.$ | Validator $i$ bond with server $j$. |
 | Validator EMA bond | $B_{ij}^{(t)} = \alpha\cdot\Delta B_{ij} + (1-\alpha)\cdot B_{ij}^{(t-1)}$ | Validator $i$ EMA bond with server $j$. |
 | Validator reward | $D_i = \sum_j B_{ij} \cdot I_j$ | Validator $i$ portion of incentive. |
@@ -228,20 +233,6 @@ Hence $\kappa=0.5$ is typically the most sensible setting.
  <img src="img/kappa_50.svg" width="330">
  <img src="img/kappa_60.svg" width="330">
 </p>
-
-#### Bonds penalty (β)
-Yuma Consensus separately adjusts server incentive $I_j$ and validation reward $D_i$ to counter manipulation, where the extent of validation reward correction depends on the bonds penalty $\beta$.
-Server incentive always corrects fully, but validation reward correction is adjustable to control the penalty of out-of-consensus validation.
-Lower-stake validators may experience lower service priority, which can result in partial validation, or exploratory validators may skew weighting toward emergent high-utility.
-Full bonds penalty $\beta=1$ may not be desired, due to the presence of non-adversarial cases like these.
-
-<p align="center">
- <img src="img/bonds_penalty_0.svg" width="330">
- <img src="img/bonds_penalty_50.svg" width="330">
- <img src="img/bonds_penalty_100.svg" width="330">
-</p>
-
-We expect that greater bonds penalty will penalize out-of-consensus validators more, which means less emission going to cabals. Comprehensive simulation with $\beta = 0$, $0.5$, and $1$ respectively show 78%, 76%, and 73% honest utility requirement. This confirms the expectation, that greater bonds penalty means greater inflation going to the honest majority.
 
 #### Emission ratio (ξ)
 Subnet servers need incentive to deliver high utility, and subnet validators need rewards to secure the network.

@@ -153,6 +153,7 @@ fn init_run_epochs(
     validators: &[u16],
     servers: &[u16],
     epochs: u16,
+    lambda: u16,
     stake_per_validator: u64,
     server_self: bool,
     input_stake: &[u64],
@@ -188,6 +189,10 @@ fn init_run_epochs(
         );
     }
     assert_eq!(SubtensorModule::get_subnetwork_n(netuid), n);
+
+    // === Set lambda value
+    SubtensorModule::set_lambda(netuid, lambda);
+    assert_eq!(SubtensorModule::get_lambda(netuid), lambda);
 
     // === Issue validator permits
     SubtensorModule::set_max_allowed_validators(netuid, validators.len() as u16);
@@ -492,6 +497,7 @@ fn map_consensus_guarantees() {
     let network_n: u16 = 512;
     let validators_n: u16 = 64;
     let epochs: u16 = 1;
+    let lambda: u16 = (std::env::args().nth(2).unwrap().parse::<f32>().unwrap() * f32::from(u16::MAX - 1)) as u16;
     let interleave = 0;
     let weight_stddev: I32F32 = fixed(0.4);
     println!("[");
@@ -523,7 +529,7 @@ fn map_consensus_guarantees() {
                 );
 
                 new_test_ext(1).execute_with(|| {
-					init_run_epochs(netuid, network_n, &validators, &servers, epochs, 1, true, &stake, true, &weights, true, false, 0, true);
+					init_run_epochs(netuid, network_n, &validators, &servers, epochs, lambda, 1, true, &stake, true, &weights, true, false, 0, true);
 
 					let mut major_emission: I64F64 = I64F64::from_num(0);
 					let mut minor_emission: I64F64 = I64F64::from_num(0);

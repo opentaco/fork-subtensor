@@ -215,7 +215,7 @@ impl<T: Config> Pallet<T> {
         log::trace!("W (mask+norm):\n{:?}\n", &weights);
 
         // Clone weights for separate bonds calculation.
-        let weights_bonds: Vec<Vec<I32F32>> = weights.clone();
+        let mut weights_bonds: Vec<Vec<I32F32>> = weights.clone();
 
         // ================================
         // == Consensus, Validator Trust ==
@@ -564,7 +564,7 @@ impl<T: Config> Pallet<T> {
         log::trace!("Weights (mask+norm): {:?}", &weights);
 
         // Clone weights for separate bonds calculation.
-        let weights_bonds: Vec<Vec<(u16, I32F32)>> = weights.clone();
+        let mut weights_bonds: Vec<Vec<(u16, I32F32)>> = weights.clone();
 
         // ================================
         // == Consensus, Validator Trust ==

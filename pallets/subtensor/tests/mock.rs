@@ -125,6 +125,7 @@ parameter_types! {
     pub const SDebug:u64 = 1;
     pub const InitialRho: u16 = 30;
     pub const InitialKappa: u16 = 32_767;
+    pub const InitialLambda: u16 = 32_767;
     pub const InitialTempo: u16 = 0;
     pub const SelfOwnership: u64 = 2;
     pub const InitialImmunityPeriod: u16 = 2;
@@ -358,6 +359,7 @@ impl pallet_subtensor::Config for Test {
     type InitialTargetRegistrationsPerInterval = InitialTargetRegistrationsPerInterval;
     type InitialRho = InitialRho;
     type InitialKappa = InitialKappa;
+    type InitialLambda = InitialLambda;
     type InitialMaxAllowedUids = InitialMaxAllowedUids;
     type InitialValidatorPruneLen = InitialValidatorPruneLen;
     type InitialScalingLawPower = InitialScalingLawPower;

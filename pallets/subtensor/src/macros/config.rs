@@ -102,6 +102,9 @@ mod config {
         /// Kappa constant.
         #[pallet::constant]
         type InitialKappa: Get<u16>;
+        /// Lambda constant.
+        #[pallet::constant]
+        type InitialLambda: Get<u16>;
         /// Max UID constant.
         #[pallet::constant]
         type InitialMaxAllowedUids: Get<u16>;

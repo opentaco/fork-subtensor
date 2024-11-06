@@ -408,6 +408,23 @@ pub mod pallet {
             Ok(())
         }
 
+        /// The extrinsic sets the lambda for a subnet.
+        /// It is only callable by the root account or subnet owner.
+        /// The extrinsic will call the Subtensor pallet to set the lambda.
+        #[pallet::call_index(16)]
+        #[pallet::weight(T::WeightInfo::sudo_set_lambda())]
+        pub fn sudo_set_lambda(origin: OriginFor<T>, netuid: u16, lambda: u16) -> DispatchResult {
+            pallet_subtensor::Pallet::<T>::ensure_subnet_owner_or_root(origin, netuid)?;
+
+            ensure!(
+                pallet_subtensor::Pallet::<T>::if_subnet_exist(netuid),
+                Error::<T>::SubnetDoesNotExist
+            );
+            pallet_subtensor::Pallet::<T>::set_lambda(netuid, lambda);
+            log::debug!("LambdaSet( netuid: {:?} lambda: {:?} ) ", netuid, lambda);
+            Ok(())
+        }
+
         /// The extrinsic sets the rho for a subnet.
         /// It is only callable by the root account or subnet owner.
         /// The extrinsic will call the Subtensor pallet to set the rho.

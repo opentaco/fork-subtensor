@@ -145,6 +145,17 @@ mod benchmarks {
     }
 
     #[benchmark]
+    fn sudo_set_lambda() {
+        pallet_subtensor::Pallet::<T>::init_new_network(
+            1u16, /*netuid*/
+            1u16, /*sudo_tempo*/
+        );
+
+        #[extrinsic_call]
+		_(RawOrigin::Root, 1u16/*netuid*/, 3u16/*lambda*/)/*set_lambda*/;
+    }
+
+    #[benchmark]
     fn sudo_set_max_allowed_uids() {
         pallet_subtensor::Pallet::<T>::init_new_network(1u16 /*netuid*/, 1u16 /*tempo*/);
 

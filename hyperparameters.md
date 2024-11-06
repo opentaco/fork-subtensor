@@ -8,6 +8,7 @@ TxRateLimit: u64 = 1; // [1 @ 64,888]
 ```rust
 Rho: u16 = 10;
 Kappa: u16 = 32_767; // 0.5 = 65535/2 
+Lambda: u16 = 32_767; // 0.5 = 65535/2
 MaxAllowedUids: u16 = 1024;
 Issuance: u64 = 0;
 MinAllowedWeights: u16 = 8;
@@ -46,6 +47,7 @@ WeightsSetRateLimit: u64 = 100;
 ```rust
 Rho: u16 = 10;
 Kappa: u16 = 32_767; // 0.5 = 65535/2 
+Lambda: u16 = 32_767; // 0.5 = 65535/2
 MaxAllowedUids: u16 = 4096;
 Issuance: u64 = 0;
 MinAllowedWeights: u16 = 50;

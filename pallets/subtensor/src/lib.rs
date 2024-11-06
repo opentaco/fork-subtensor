@@ -504,6 +504,11 @@ pub mod pallet {
         T::InitialKappa::get()
     }
     #[pallet::type_value]
+    /// Default value for lambda parameter.
+    pub fn DefaultLambda<T: Config>() -> u16 {
+        T::InitialLambda::get()
+    }
+    #[pallet::type_value]
     /// Default maximum allowed UIDs.
     pub fn DefaultMaxAllowedUids<T: Config>() -> u16 {
         T::InitialMaxAllowedUids::get()
@@ -966,6 +971,9 @@ pub mod pallet {
     #[pallet::storage]
     /// --- MAP ( netuid ) --> Kappa
     pub type Kappa<T> = StorageMap<_, Identity, u16, u16, ValueQuery, DefaultKappa<T>>;
+    #[pallet::storage]
+    /// --- MAP ( netuid ) --> Lambda
+    pub type Lambda<T> = StorageMap<_, Identity, u16, u16, ValueQuery, DefaultLambda<T>>;
     #[pallet::storage]
     /// --- MAP ( netuid ) --> uid, we use to record uids to prune at next epoch.
     pub type NeuronsToPruneAtNextEpoch<T: Config> = StorageMap<_, Identity, u16, u16, ValueQuery>;

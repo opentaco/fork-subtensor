@@ -913,6 +913,7 @@ pub const INITIAL_CHILDKEY_TAKE_RATELIMIT: u64 = 5;
 parameter_types! {
     pub const SubtensorInitialRho: u16 = 10;
     pub const SubtensorInitialKappa: u16 = 32_767; // 0.5 = 65535/2
+    pub const SubtensorInitialLambda: u16 = 32_767; // 0.5 = 65535/2
     pub const SubtensorInitialMaxAllowedUids: u16 = 4096;
     pub const SubtensorInitialIssuance: u64 = 0;
     pub const SubtensorInitialMinAllowedWeights: u16 = 1024;
@@ -978,6 +979,7 @@ impl pallet_subtensor::Config for Runtime {
     type Scheduler = Scheduler;
     type InitialRho = SubtensorInitialRho;
     type InitialKappa = SubtensorInitialKappa;
+    type InitialLambda = SubtensorInitialLambda;
     type InitialMaxAllowedUids = SubtensorInitialMaxAllowedUids;
     type InitialBondsMovingAverage = SubtensorInitialBondsMovingAverage;
     type InitialIssuance = SubtensorInitialIssuance;

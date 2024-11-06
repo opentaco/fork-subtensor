@@ -214,6 +214,9 @@ impl<T: Config> Pallet<T> {
         inplace_row_normalize(&mut weights);
         log::trace!("W (mask+norm):\n{:?}\n", &weights);
 
+        // Clone weights for separate bonds calculation.
+        let weights_bonds: Vec<Vec<I32F32>> = weights.clone();
+
         // ================================
         // == Consensus, Validator Trust ==
         // ================================
@@ -225,7 +228,12 @@ impl<T: Config> Pallet<T> {
         let kappa: I32F32 = Self::get_float_kappa(netuid); // consensus majority ratio, e.g. 51%.
         let consensus: Vec<I32F32> = weighted_median_col(&active_stake, &weights, kappa);
         inplace_col_clip(&mut weights, &consensus);
-        let validator_trust: Vec<I32F32> = row_sum(&weights);
+
+        // Clip weights for bonds at majority consensus for bonds
+        let lambda: I32F32 = Self::get_float_lambda(netuid); // consensus majority ratio for bonds, e.g. 51%.
+        let consensus_bonds: Vec<I32F32> = weighted_median_col(&active_stake, &weights_bonds, lambda);
+        inplace_col_clip(&mut weights_bonds, &consensus_bonds);
+        let validator_trust: Vec<I32F32> = row_sum(&weights_bonds);
 
         // ====================================
         // == Ranks, Server Trust, Incentive ==
@@ -252,11 +260,11 @@ impl<T: Config> Pallet<T> {
         log::trace!("B:\n{:?}\n", &bonds);
 
         // Compute bonds delta column normalized.
-        let mut bonds_delta: Vec<Vec<I32F32>> = row_hadamard(&weights, &active_stake); // ΔB = W◦S
+        let mut bonds_delta: Vec<Vec<I32F32>> = row_hadamard(&weights_bonds, &active_stake); // ΔB = W◦S
         inplace_col_normalize(&mut bonds_delta); // sum_i b_ij = 1
         log::trace!("ΔB:\n{:?}\n", &bonds_delta);
         // Compute the Exponential Moving Average (EMA) of bonds.
-        let mut ema_bonds = Self::compute_ema_bonds(netuid, consensus.clone(), bonds_delta, bonds);
+        let mut ema_bonds = Self::compute_ema_bonds(netuid, consensus_bonds.clone(), bonds_delta, bonds);
         inplace_col_normalize(&mut ema_bonds); // sum_i b_ij = 1
         log::trace!("emaB:\n{:?}\n", &ema_bonds);
 
@@ -555,6 +563,9 @@ impl<T: Config> Pallet<T> {
         inplace_row_normalize_sparse(&mut weights);
         log::trace!("Weights (mask+norm): {:?}", &weights);
 
+        // Clone weights for separate bonds calculation.
+        let weights_bonds: Vec<Vec<(u16, I32F32)>> = weights.clone();
+
         // ================================
         // == Consensus, Validator Trust ==
         // ================================
@@ -571,7 +582,12 @@ impl<T: Config> Pallet<T> {
         weights = col_clip_sparse(&weights, &consensus);
         log::trace!("Weights: {:?}", &weights);
 
-        let validator_trust: Vec<I32F32> = row_sum_sparse(&weights);
+        // Clip weights for bonds at majority consensus for bonds
+        let lambda: I32F32 = Self::get_float_lambda(netuid); // consensus majority ratio for bonds, e.g. 51%.
+        let consensus_bonds: Vec<I32F32> = weighted_median_col_sparse(&active_stake, &weights_bonds, n, lambda);
+        weights_bonds = col_clip_sparse(&weights_bonds, &consensus_bonds);
+
+        let validator_trust: Vec<I32F32> = row_sum_sparse(&weights_bonds);
         log::trace!("Validator Trust: {:?}", &validator_trust);
 
         // =============================
@@ -612,7 +628,7 @@ impl<T: Config> Pallet<T> {
         log::trace!("B (mask+norm): {:?}", &bonds);
 
         // Compute bonds delta column normalized.
-        let mut bonds_delta: Vec<Vec<(u16, I32F32)>> = row_hadamard_sparse(&weights, &active_stake); // ΔB = W◦S (outdated W masked)
+        let mut bonds_delta: Vec<Vec<(u16, I32F32)>> = row_hadamard_sparse(&weights_bonds, &active_stake); // ΔB = W◦S (outdated W masked)
         log::trace!("ΔB: {:?}", &bonds_delta);
 
         // Normalize bonds delta.
@@ -621,7 +637,7 @@ impl<T: Config> Pallet<T> {
 
         // Compute the Exponential Moving Average (EMA) of bonds.
         let mut ema_bonds =
-            Self::compute_ema_bonds_sparse(netuid, consensus.clone(), bonds_delta, bonds);
+            Self::compute_ema_bonds_sparse(netuid, consensus_bonds.clone(), bonds_delta, bonds);
         // Normalize EMA bonds.
         inplace_col_normalize_sparse(&mut ema_bonds, n); // sum_i b_ij = 1
         log::trace!("Exponential Moving Average Bonds: {:?}", &ema_bonds);
@@ -801,6 +817,9 @@ impl<T: Config> Pallet<T> {
     }
     pub fn get_float_kappa(netuid: u16) -> I32F32 {
         I32F32::from_num(Self::get_kappa(netuid)).saturating_div(I32F32::from_num(u16::MAX))
+    }
+    pub fn get_float_lambda(netuid: u16) -> I32F32 {
+        I32F32::from_num(Self::get_lambda(netuid)).saturating_div(I32F32::from_num(u16::MAX))
     }
 
     pub fn get_normalized_stake(netuid: u16) -> Vec<I32F32> {

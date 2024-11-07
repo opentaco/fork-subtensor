@@ -157,7 +157,7 @@ def visualize_data(emission_data, output_filename="consensus_plot.svg"):
     plt.xlabel('Major self-weight')
 
     # Save the plot
-    plt.savefig(output_filename, format='svg')
+    plt.savefig(output_filename, format='svg', bbox_inches='tight')
     print(f"Plot saved to {output_filename}")
 
 

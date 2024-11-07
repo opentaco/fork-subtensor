@@ -234,6 +234,36 @@ Hence $\kappa=0.5$ is typically the most sensible setting.
  <img src="img/kappa_60.svg" width="330">
 </p>
 
+#### Bond majority ratio (λ)
+Hyperparameter `Lambda` sets the ratio of stake that decides weight consensus for the bond calculation, with a typical recommended value of $\lambda=0.5$, which means that at least 50% of stake needs to be in consensus on the maximum weight assignable to a specific server.
+We separate control from $\kappa$ to $\lambda$, the consensus level for the adjustment of validator rewards, to separately allow smaller stake to not get overly penalized when deviating from majority voting behavior.
+
+We expect a trade-off between security and a degree of out-of-consensus validation to address cases where servers deprioritize minority validators. Notably, allowing out-of-consensus validation always increases the honest utility requirement to retain honest stake.
+
+We can compare security guarantees of different validation reward strategies, namely bond majority ratio (λ), bonds penalty (β) and emission ratio (ξ). We expect the same guarantees when $\lambda = \beta = 0$ (fully allowing out-of-consensus), and when $\lambda = 0.5$ and $\beta=1$ (no allowance). Any empirical differences ostensibly due to random simulation variances.
+
+We observe that emission ratio $\xi=0.25$ gives security roughly equivalent to $\lambda = \beta = 0$ (fully allowing out-of-consensus, but requiring 50% validation reward). This means that increasing server incentive to 75\% and reducing validation reward to 25\% achieves a similar effect, namely reducing incentive for good validation.
+
+<p align="center">
+ <img src="img/lambda_0.svg" width="330">
+ <img src="img/lambda_25.svg" width="330">
+ <img src="img/lambda_50.svg" width="330">
+</p>
+
+#### Bonds penalty (β)
+Yuma Consensus separately adjusts server incentive $I_j$ and validation reward $D_i$ to counter manipulation, where the extent of validation reward correction depends on the bonds penalty $\beta$.
+Server incentive always corrects fully, but validation reward correction is adjustable to control the penalty of out-of-consensus validation.
+Lower-stake validators may experience lower service priority, which can result in partial validation, or exploratory validators may skew weighting toward emergent high-utility.
+Full bonds penalty $\beta=1$ may not be desired, due to the presence of non-adversarial cases like these.
+
+<p align="center">
+ <img src="img/bonds_penalty_0.svg" width="330">
+ <img src="img/bonds_penalty_50.svg" width="330">
+ <img src="img/bonds_penalty_100.svg" width="330">
+</p>
+
+We expect that greater bonds penalty will penalize out-of-consensus validators more, which means less emission going to cabals. Comprehensive simulation with $\beta = 0$, $0.5$, and $1$ respectively show 78%, 76%, and 73% honest utility requirement. This confirms the expectation, that greater bonds penalty means greater inflation going to the honest majority.
+
 #### Emission ratio (ξ)
 Subnet servers need incentive to deliver high utility, and subnet validators need rewards to secure the network.
 We expect that more emission going to validators will improve security guarantees, since self-serving validation can then be economically disincentivized.

@@ -106,15 +106,15 @@ def visualize_data(emission_data, output_filename="consensus_plot.svg"):
             contours.collections[1].set_linewidth(3) # Highlight isolated stake
         plt.clabel(contours, inline=True, fontsize=10)
 
-    # points_to_plot = [(0.79, 1, '1')]
+    # points_to_plot = [(0.78, 1, '1')]
     # to_highlight = 0
     # hyperparam = 0.0
 
-    # points_to_plot = [(0.78, 1, '2')]
+    # points_to_plot = [(0.77, 1, '2')]
     # to_highlight = 0
     # hyperparam = 0.25
 
-    points_to_plot = [(0.79, 1, '1'), (0.78, 1, '2'), (0.73, 0.8, '3')]
+    points_to_plot = [(0.78, 1, '1'), (0.77, 1, '2'), (0.73, 0.8, '3')]
     to_highlight = 2
     hyperparam = 0.5
     

@@ -2,6 +2,7 @@ import re
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 from matplotlib.pyplot import cm
 
 
@@ -105,8 +106,53 @@ def visualize_data(emission_data, output_filename="consensus_plot.svg"):
             contours.collections[1].set_linewidth(3) # Highlight isolated stake
         plt.clabel(contours, inline=True, fontsize=10)
 
+    # points_to_plot = [(0.79, 1, '1')]
+    # to_highlight = 0
+    # hyperparam = 0.0
+
+    # points_to_plot = [(0.78, 1, '2')]
+    # to_highlight = 0
+    # hyperparam = 0.25
+
+    points_to_plot = [(0.79, 1, '1'), (0.78, 1, '2'), (0.73, 0.8, '3')]
+    to_highlight = 2
+    hyperparam = 0.5
+    
+    annotation_text = [
+        f"60% stake + {100*points_to_plot[to_highlight][0]:.0f}% utility",  # Bold by default (first line)
+        "receives 60% emission",
+        "retains 60% stake",
+        f"[optimal cabal weight = {100*points_to_plot[to_highlight][1]:.0f}%]",
+        "",  # Blank line
+        f"bond consensus level = {100*hyperparam:.0f}%"
+    ]
+    for i, line in enumerate(annotation_text):
+        ax.text(0.1, 0.9 - 0.04 * i, line, 
+                fontweight='bold' if i == 0 else 'normal', # Conditional font weight
+                ha='left', va='center', color='black', alpha=0.8, fontsize=12)
+    
+    # rotated_text_x = 0.4
+    # rotated_text_y = 0.24
+    # ax.text(rotated_text_x, rotated_text_y, "stake=emission=60%", ha='center', va='center', 
+    #         rotation=41, color='#38588C', alpha=0.8, fontsize=12)
+
+    # Vertical lines, dots, circles, and numbers
+    for i, (x, y, nr) in enumerate(points_to_plot):
+        alpha = 0.75 if i == to_highlight else 0.35  # Main line has higher alpha
+        ax.axvline(x, linestyle='--', color='red', alpha=alpha)
+        if i == to_highlight:
+            ax.plot(x, y, 'ro', markersize=8, alpha=alpha)
+        
+        circle = patches.Circle((x, 0.502 - 0.1 * i), radius=0.027, facecolor='black', 
+                                edgecolor='white', alpha=alpha, linewidth=2, zorder=100)  # Consistent alpha
+        ax.add_patch(circle)
+
+        font_props = {'family': 'monospace', 'weight': 'bold', 'size': 12,
+                       'ha': 'center', 'va': 'center', 'color': 'white', 'zorder': 101}
+        ax.text(x,  0.5 - 0.1 * i, nr, **font_props)  # Numbered labels
+    
     # Add title and labels
-    plt.title(f'Major emission [$stake_{{maj}}=emission_{{maj}}$ retention lines]')
+    plt.title(f'Major emission [$S_{{maj}}=E_{{maj}}$] [$\\lambda={hyperparam:.2f}$]')
     plt.ylabel('Minor self-weight')
     plt.xlabel('Major self-weight')
 

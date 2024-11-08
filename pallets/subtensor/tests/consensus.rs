@@ -502,8 +502,8 @@ fn map_consensus_guarantees() {
     let network_n: u16 = 512;
     let validators_n: u16 = 64;
     let epochs: u16 = 1;
-    let lambda: u16 = 32_767;
-    let mu: u16 = (std::env::args().nth(2).unwrap().parse::<f32>().unwrap() * f32::from(u16::MAX - 1)) as u16;
+    let lambda: u16 = (std::env::args().nth(2).unwrap().parse::<f32>().unwrap() * f32::from(u16::MAX - 1)) as u16;
+    let mu: u16 = (std::env::args().nth(3).unwrap().parse::<f32>().unwrap() * f32::from(u16::MAX - 1)) as u16;
     let interleave = 0;
     let weight_stddev: I32F32 = fixed(0.4);
     println!("[");

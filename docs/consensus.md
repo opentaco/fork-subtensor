@@ -203,7 +203,7 @@ Subtensor integration tests run Monte Carlo simulations of large realistic netwo
 
 Retention profiles are reproducible by running test [`map_consensus_guarantees()`](../pallets/subtensor/tests/consensus.rs) and plotting with [`map_consensus.py`](../scripts/map_consensus.py).
 ```bash
-RUST_BACKTRACE=1 SKIP_WASM_BUILD=1 RUSTFLAGS="-C opt-level=3" cargo test --manifest-path=pallets/subtensor/Cargo.toml --test consensus -- map_consensus_guarantees 0.5 --exact --nocapture > consensus.txt
+RUST_BACKTRACE=1 SKIP_WASM_BUILD=1 RUSTFLAGS="-C opt-level=3" cargo test --manifest-path=pallets/subtensor/Cargo.toml --test consensus -- map_consensus_guarantees <lambda> <mu> --exact --nocapture > consensus.txt
 
 python scripts/map_consensus.py consensus.txt
 ```
@@ -336,7 +336,7 @@ The Subtensor integration tests simulate large, realistic networks under adversa
 
 
 ```bash
-RUST_BACKTRACE=1 SKIP_WASM_BUILD=1 RUSTFLAGS="-C opt-level=3" cargo test --manifest-path=pallets/subtensor/Cargo.toml --test consensus -- map_consensus_guarantees 0.5 --exact --nocapture > consensus.txt
+RUST_BACKTRACE=1 SKIP_WASM_BUILD=1 RUSTFLAGS="-C opt-level=3" cargo test --manifest-path=pallets/subtensor/Cargo.toml --test consensus -- map_consensus_guarantees 0.5 0 --exact --nocapture > consensus.txt
 ```
 This command runs the `map_consensus_guarantees` test and saves the output to `consensus.txt`.
 

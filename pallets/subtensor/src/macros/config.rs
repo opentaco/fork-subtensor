@@ -105,6 +105,9 @@ mod config {
         /// Lambda constant.
         #[pallet::constant]
         type InitialLambda: Get<u16>;
+        /// Mu constant.
+        #[pallet::constant]
+        type InitialMu: Get<u16>;
         /// Max UID constant.
         #[pallet::constant]
         type InitialMaxAllowedUids: Get<u16>;

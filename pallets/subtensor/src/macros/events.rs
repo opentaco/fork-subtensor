@@ -43,6 +43,8 @@ mod events {
         KappaSet(u16, u16),
         /// Lambda is set for a subnet.
         LambdaSet(u16, u16),
+        /// Mu is set for a subnet.
+        MuSet(u16, u16),
         /// minimum allowed weight is set for a subnet.
         MinAllowedWeightSet(u16, u16),
         /// the validator pruning length has been set.

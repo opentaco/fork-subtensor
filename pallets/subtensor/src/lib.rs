@@ -509,6 +509,11 @@ pub mod pallet {
         T::InitialLambda::get()
     }
     #[pallet::type_value]
+    /// Default value for mu parameter.
+    pub fn DefaultMu<T: Config>() -> u16 {
+        T::InitialMu::get()
+    }
+    #[pallet::type_value]
     /// Default maximum allowed UIDs.
     pub fn DefaultMaxAllowedUids<T: Config>() -> u16 {
         T::InitialMaxAllowedUids::get()
@@ -974,6 +979,9 @@ pub mod pallet {
     #[pallet::storage]
     /// --- MAP ( netuid ) --> Lambda
     pub type Lambda<T> = StorageMap<_, Identity, u16, u16, ValueQuery, DefaultLambda<T>>;
+    #[pallet::storage]
+    /// --- MAP ( netuid ) --> Mu
+    pub type Mu<T> = StorageMap<_, Identity, u16, u16, ValueQuery, DefaultMu<T>>;
     #[pallet::storage]
     /// --- MAP ( netuid ) --> uid, we use to record uids to prune at next epoch.
     pub type NeuronsToPruneAtNextEpoch<T: Config> = StorageMap<_, Identity, u16, u16, ValueQuery>;

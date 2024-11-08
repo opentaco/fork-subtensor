@@ -50,6 +50,7 @@ pub trait WeightInfo {
 	fn sudo_set_rho() -> Weight;
 	fn sudo_set_kappa() -> Weight;
 	fn sudo_set_lambda() -> Weight;
+	fn sudo_set_mu() -> Weight;
 	fn sudo_set_max_allowed_uids() -> Weight;
 	fn sudo_set_min_allowed_weights() -> Weight;
 	fn sudo_set_validator_prune_len() -> Weight;
@@ -277,6 +278,19 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// Storage: SubtensorModule Lambda (r:0 w:1)
 	/// Proof Skipped: SubtensorModule Lambda (max_values: None, max_size: None, mode: Measured)
 	fn sudo_set_lambda() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `1111`
+		//  Estimated: `4697`
+		// Minimum execution time: 45_620_000 picoseconds.
+		Weight::from_parts(46_440_000, 4697)
+			.saturating_add(T::DbWeight::get().reads(1_u64))
+			.saturating_add(T::DbWeight::get().writes(1_u64))
+	}
+	/// Storage: SubtensorModule NetworksAdded (r:1 w:0)
+	/// Proof Skipped: SubtensorModule NetworksAdded (max_values: None, max_size: None, mode: Measured)
+	/// Storage: SubtensorModule Mu (r:0 w:1)
+	/// Proof Skipped: SubtensorModule Mu (max_values: None, max_size: None, mode: Measured)
+	fn sudo_set_mu() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `1111`
 		//  Estimated: `4697`
@@ -658,6 +672,19 @@ impl WeightInfo for () {
 	/// Storage: SubtensorModule Lambda (r:0 w:1)
 	/// Proof Skipped: SubtensorModule Lambda (max_values: None, max_size: None, mode: Measured)
 	fn sudo_set_lambda() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `1111`
+		//  Estimated: `4697`
+		// Minimum execution time: 45_620_000 picoseconds.
+		Weight::from_parts(46_440_000, 4697)
+			.saturating_add(RocksDbWeight::get().reads(1_u64))
+			.saturating_add(RocksDbWeight::get().writes(1_u64))
+	}
+	/// Storage: SubtensorModule NetworksAdded (r:1 w:0)
+	/// Proof Skipped: SubtensorModule NetworksAdded (max_values: None, max_size: None, mode: Measured)
+	/// Storage: SubtensorModule Mu (r:0 w:1)
+	/// Proof Skipped: SubtensorModule Mu (max_values: None, max_size: None, mode: Measured)
+	fn sudo_set_mu() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `1111`
 		//  Estimated: `4697`

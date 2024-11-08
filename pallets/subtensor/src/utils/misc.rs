@@ -493,6 +493,13 @@ impl<T: Config> Pallet<T> {
         Lambda::<T>::insert(netuid, lambda);
         Self::deposit_event(Event::LambdaSet(netuid, lambda));
     }
+    pub fn get_mu(netuid: u16) -> u16 {
+        Mu::<T>::get(netuid)
+    }
+    pub fn set_mu(netuid: u16, mu: u16) {
+        Mu::<T>::insert(netuid, mu);
+        Self::deposit_event(Event::MuSet(netuid, mu));
+    }
     pub fn get_commit_reveal_weights_enabled(netuid: u16) -> bool {
         CommitRevealWeightsEnabled::<T>::get(netuid)
     }

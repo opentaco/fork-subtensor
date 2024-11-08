@@ -425,6 +425,23 @@ pub mod pallet {
             Ok(())
         }
 
+        /// The extrinsic sets the mu for a subnet.
+        /// It is only callable by the root account or subnet owner.
+        /// The extrinsic will call the Subtensor pallet to set the mu.
+        #[pallet::call_index(16)]
+        #[pallet::weight(T::WeightInfo::sudo_set_mu())]
+        pub fn sudo_set_mu(origin: OriginFor<T>, netuid: u16, mu: u16) -> DispatchResult {
+            pallet_subtensor::Pallet::<T>::ensure_subnet_owner_or_root(origin, netuid)?;
+
+            ensure!(
+                pallet_subtensor::Pallet::<T>::if_subnet_exist(netuid),
+                Error::<T>::SubnetDoesNotExist
+            );
+            pallet_subtensor::Pallet::<T>::set_mu(netuid, mu);
+            log::debug!("MuSet( netuid: {:?} mu: {:?} ) ", netuid, mu);
+            Ok(())
+        }
+
         /// The extrinsic sets the rho for a subnet.
         /// It is only callable by the root account or subnet owner.
         /// The extrinsic will call the Subtensor pallet to set the rho.

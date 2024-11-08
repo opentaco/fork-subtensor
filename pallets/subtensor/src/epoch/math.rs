@@ -1073,7 +1073,6 @@ pub fn weighted_mean_col(
         }
         if !use_stake.is_empty() {
             inplace_normalize(&mut use_stake);
-            let stake_sum: I32F32 = use_stake.iter().sum();
             mean[c] = dotprod(&use_stake, &use_score);
         }
     }
@@ -1091,8 +1090,6 @@ pub fn weighted_mean_col_sparse(
     let zero: I32F32 = I32F32::from_num(0);
     let mut use_stake: Vec<I32F32> = stake.iter().copied().filter(|&s| s > zero).collect();
     inplace_normalize(&mut use_stake);
-    let stake_sum: I32F32 = use_stake.iter().sum();
-    let stake_idx: Vec<usize> = (0..use_stake.len()).collect();
     let mut use_score: Vec<Vec<I32F32>> = vec![vec![zero; use_stake.len()]; columns as usize];
     let mut mean: Vec<I32F32> = vec![zero; columns as usize];
     let mut k: usize = 0;

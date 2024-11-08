@@ -231,7 +231,12 @@ impl<T: Config> Pallet<T> {
 
         // Clip weights for bonds at majority consensus for bonds
         let lambda: I32F32 = Self::get_float_lambda(netuid); // consensus majority ratio for bonds, e.g. 51%.
-        let consensus_bonds: Vec<I32F32> = weighted_median_col(&active_stake, &weights_bonds, lambda);
+        let median_consensus: Vec<I32F32> = weighted_median_col(&active_stake, &weights_bonds, lambda);
+        let mean_consensus: Vec<I32F32> = weighted_mean_col(&active_stake, &weights_bonds);
+
+        let mu: I32F32 = Self::get_float_mu(netuid); // Interpolation ratio between median and mean consensus for bonds
+        let consensus_bonds: Vec<I32F32> = vec_interp(&median_consensus, &mean_consensus, mu);
+
         inplace_col_clip(&mut weights_bonds, &consensus_bonds);
         let validator_trust: Vec<I32F32> = row_sum(&weights_bonds);
 
@@ -584,7 +589,12 @@ impl<T: Config> Pallet<T> {
 
         // Clip weights for bonds at majority consensus for bonds
         let lambda: I32F32 = Self::get_float_lambda(netuid); // consensus majority ratio for bonds, e.g. 51%.
-        let consensus_bonds: Vec<I32F32> = weighted_median_col_sparse(&active_stake, &weights_bonds, n, lambda);
+        let median_consensus: Vec<I32F32> = weighted_median_col_sparse(&active_stake, &weights_bonds, n, lambda);
+        let mean_consensus: Vec<I32F32> = weighted_mean_col_sparse(&active_stake, &weights_bonds, n);
+
+        let mu: I32F32 = Self::get_float_mu(netuid); // Interpolation ratio between median and mean consensus for bonds
+        let consensus_bonds: Vec<I32F32> = vec_interp(&median_consensus, &mean_consensus, mu);
+
         weights_bonds = col_clip_sparse(&weights_bonds, &consensus_bonds);
 
         let validator_trust: Vec<I32F32> = row_sum_sparse(&weights_bonds);
@@ -820,6 +830,9 @@ impl<T: Config> Pallet<T> {
     }
     pub fn get_float_lambda(netuid: u16) -> I32F32 {
         I32F32::from_num(Self::get_lambda(netuid)).saturating_div(I32F32::from_num(u16::MAX))
+    }
+    pub fn get_float_mu(netuid: u16) -> I32F32 {
+        I32F32::from_num(Self::get_mu(netuid)).saturating_div(I32F32::from_num(u16::MAX))
     }
 
     pub fn get_normalized_stake(netuid: u16) -> Vec<I32F32> {

@@ -772,6 +772,61 @@ fn test_math_vecdiv() {
 }
 
 #[test]
+fn test_math_vec_interp() {
+    let x: Vec<I32F32> = vec_to_fixed(&[]);
+    let y: Vec<I32F32> = vec_to_fixed(&[]);
+    let r: I32F32 = I32F32::from_num(0);
+    let result: Vec<I32F32> = vec_to_fixed(&[]);
+    assert_eq!(result, vec_interp(&x, &y, r));
+
+    let x: Vec<I32F32> = vec_to_fixed(&[0., 1., 0., 1.]);
+    let y: Vec<I32F32> = vec_to_fixed(&[0., 1., 1., 0.]);
+    let r: I32F32 = I32F32::from_num(0);
+    let result: Vec<I32F32> = vec_to_fixed(&[0., 1., 0., 1.]);
+    assert_eq!(result, vec_interp(&x, &y, r));
+
+    let x: Vec<I32F32> = vec_to_fixed(&[0., 1., 0., 1.]);
+    let y: Vec<I32F32> = vec_to_fixed(&[0., 1., 1., 0.]);
+    let r: I32F32 = I32F32::from_num(0.2);
+    let result: Vec<I32F32> = vec_to_fixed(&[0., 1., 0.2, 0.8]);
+    assert_eq!(result, vec_interp(&x, &y, r));
+
+    let x: Vec<I32F32> = vec_to_fixed(&[1., 1., 10.]);
+    let y: Vec<I32F32> = vec_to_fixed(&[2., 3., 2.]);
+    let r: I32F32 = I32F32::from_num(1);
+    let result: Vec<I32F32> = vec_to_fixed(&[2., 3., 2.]);
+    assert_eq!(result, vec_interp(&x, &y, r));
+}
+
+#[test]
+fn test_math_dotprod() {
+    let x: Vec<I32F32> = vec_to_fixed(&[]);
+    let y: Vec<I32F32> = vec_to_fixed(&[]);
+    let result: I32F32 = I32F32::from_num(0);
+    assert_eq!(result, dotprod(&x, &y));
+
+    let x: Vec<I32F32> = vec_to_fixed(&[1]);
+    let y: Vec<I32F32> = vec_to_fixed(&[1]);
+    let result: I32F32 = I32F32::from_num(1);
+    assert_eq!(result, dotprod(&x, &y));
+
+    let x: Vec<I32F32> = vec_to_fixed(&[0., 1., 0., 1.]);
+    let y: Vec<I32F32> = vec_to_fixed(&[0., 1., 1., 0.]);
+    let result: I32F32 = I32F32::from_num(1);
+    assert_eq!(result, dotprod(&x, &y));
+
+    let x: Vec<I32F32> = vec_to_fixed(&[1., 1., 10.]);
+    let y: Vec<I32F32> = vec_to_fixed(&[2., 3., 2.]);
+    let result: I32F32 = I32F32::from_num(25);
+    assert_eq!(result, dotprod(&x, &y));
+
+    let x: Vec<I32F32> = vec_to_fixed(&[0.1, 0.2, 0.3]);
+    let y: Vec<I32F32> = vec_to_fixed(&[0.4, 0.5, 0.6]);
+    let result: I32F32 = I32F32::from_num(0.32);
+    assert_eq!(result, dotprod(&x, &y));
+}
+
+#[test]
 fn test_math_inplace_row_normalize() {
     let epsilon: I32F32 = I32F32::from_num(0.0001);
     let vector: Vec<f32> = vec![

@@ -312,6 +312,31 @@ pub fn vecdiv(x: &[I32F32], y: &[I32F32]) -> Vec<I32F32> {
         .collect()
 }
 
+/// Returns vector interpolation r * (y - x) + x.
+#[allow(dead_code)]
+pub fn vec_interp(x: &[I32F32], y: &[I32F32], r: I32F32) -> Vec<I32F32> {
+    assert_eq!(x.len(), y.len());
+    x.iter()
+        .zip(y)
+        .map(|(x_i, y_i)| {
+            r.saturating_mul(
+                y_i.saturating_sub(*x_i)
+            )
+                .saturating_add(*x_i)
+        })
+        .collect()
+}
+
+/// Returns dot product: sum(x * y) for input vectors x and y.
+#[allow(dead_code)]
+pub fn dotprod(x: &[I32F32], y: &[I32F32]) -> I32F32 {
+    assert_eq!(x.len(), y.len());
+    x.iter()
+        .zip(y)
+        .map(|(x_i, y_i)| x_i.saturating_mul(*y_i)) // Multiplication
+        .sum() // Directly sum the results
+}
+
 // Normalizes (sum to 1 except 0) each row (dim=0) of a matrix in-place.
 #[allow(dead_code)]
 pub fn inplace_row_normalize(x: &mut [Vec<I32F32>]) {
@@ -1022,6 +1047,68 @@ pub fn weighted_median_col_sparse(
         );
     }
     median
+}
+
+/// Column-wise weighted mean, e.g. stake-weighted mean scores per server (column) over all validators (rows).
+#[allow(dead_code, clippy::indexing_slicing)]
+pub fn weighted_mean_col(
+    stake: &[I32F32],
+    score: &[Vec<I32F32>],
+) -> Vec<I32F32> {
+    let rows = stake.len();
+    let columns = score[0].len();
+    let zero: I32F32 = I32F32::from_num(0);
+    let mut mean: Vec<I32F32> = vec![zero; columns];
+
+    #[allow(clippy::needless_range_loop)]
+    for c in 0..columns {
+        let mut use_stake: Vec<I32F32> = vec![];
+        let mut use_score: Vec<I32F32> = vec![];
+        for r in 0..rows {
+            assert_eq!(columns, score[r].len());
+            if stake[r] > zero {
+                use_stake.push(stake[r]);
+                use_score.push(score[r][c]);
+            }
+        }
+        if !use_stake.is_empty() {
+            inplace_normalize(&mut use_stake);
+            let stake_sum: I32F32 = use_stake.iter().sum();
+            mean[c] = dotprod(&use_stake, &use_score);
+        }
+    }
+    mean
+}
+
+/// Column-wise weighted mean, e.g. stake-weighted mean scores per server (column) over all validators (rows).
+#[allow(dead_code, clippy::indexing_slicing)]
+pub fn weighted_mean_col_sparse(
+    stake: &[I32F32],
+    score: &[Vec<(u16, I32F32)>],
+    columns: u16,
+) -> Vec<I32F32> {
+    let rows = stake.len();
+    let zero: I32F32 = I32F32::from_num(0);
+    let mut use_stake: Vec<I32F32> = stake.iter().copied().filter(|&s| s > zero).collect();
+    inplace_normalize(&mut use_stake);
+    let stake_sum: I32F32 = use_stake.iter().sum();
+    let stake_idx: Vec<usize> = (0..use_stake.len()).collect();
+    let mut use_score: Vec<Vec<I32F32>> = vec![vec![zero; use_stake.len()]; columns as usize];
+    let mut mean: Vec<I32F32> = vec![zero; columns as usize];
+    let mut k: usize = 0;
+    for r in 0..rows {
+        if stake[r] <= zero {
+            continue;
+        }
+        for (c, val) in score[r].iter() {
+            use_score[*c as usize][k] = *val;
+        }
+        k.saturating_inc();
+    }
+    for c in 0..columns as usize {
+        mean[c] = dotprod(&use_stake, &use_score[c]);
+    }
+    mean
 }
 
 // Element-wise product of two matrices.

@@ -61,6 +61,9 @@ $$\widetilde{W_j}=\arg \max_w \left( \sum_i S_i \cdot \left\lbrace W_{ij} \ge w 
 
 The consensus for bonds policy applies weight correction $\widetilde{W_{ij}} = \min( W_{ij}, \widetilde{W_j} )$ to weight excess above consensus, which penalizes selfish validators by slashing their voting stake (bonds) and validation rewards.
 
+We can also interpolate between median and mean consensus for the bonds calculation via hyperparameter $\mu$, in order to relax the consensus requirements for validators. $\mu=0$ gives the usual median consensus $\widetilde{W_j}$, otherwise $\mu=1$ uses only the stake-weighted mean consensus $\sum_i S_i \cdot W_{ij}$.
+
+$$\widetilde{W_j}'=\mu \left(\sum_i S_i \cdot W_{ij} - \widetilde{W_j}\right) + \widetilde{W_j}\tag{9}$$
 
 #### Validator bonding
 A subnet validator $i$ bonds with server $j$, where the instant bond value is the normalized bonds penalty clipped weighted stake.

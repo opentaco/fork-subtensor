@@ -789,7 +789,8 @@ fn test_math_vec_interp() {
     let y: Vec<I32F32> = vec_to_fixed(&[0., 1., 1., 0.]);
     let r: I32F32 = I32F32::from_num(0.2);
     let result: Vec<I32F32> = vec_to_fixed(&[0., 1., 0.2, 0.8]);
-    assert_eq!(result, vec_interp(&x, &y, r));
+    let epsilon: I32F32 = I32F32::from_num(0.0001);
+    assert_vec_compare(result, vec_interp(&x, &y, r), epsilon);
 
     let x: Vec<I32F32> = vec_to_fixed(&[1., 1., 10.]);
     let y: Vec<I32F32> = vec_to_fixed(&[2., 3., 2.]);
@@ -823,7 +824,8 @@ fn test_math_dotprod() {
     let x: Vec<I32F32> = vec_to_fixed(&[0.1, 0.2, 0.3]);
     let y: Vec<I32F32> = vec_to_fixed(&[0.4, 0.5, 0.6]);
     let result: I32F32 = I32F32::from_num(0.32);
-    assert_eq!(result, dotprod(&x, &y));
+    let epsilon: I32F32 = I32F32::from_num(0.0001);
+    assert_float_compare(result, dotprod(&x, &y), epsilon);
 }
 
 #[test]

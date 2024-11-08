@@ -325,7 +325,7 @@ ssh -L 8888:localhost:8888 root@<your_vps_ip_address> -p <your_vps_port> -i ~/.s
    ```bash
    git clone https://github.com/opentaco/fork-subtensor.git 
    cd fork-subtensor
-   git checkout split-kappa-map
+   git checkout mean-median-map
 
    ```
 

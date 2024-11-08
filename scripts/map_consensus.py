@@ -106,17 +106,17 @@ def visualize_data(emission_data, output_filename="consensus_plot.svg"):
             contours.collections[1].set_linewidth(3) # Highlight isolated stake
         plt.clabel(contours, inline=True, fontsize=10)
 
-    # points_to_plot = [(0.78, 1, '1')]
+    # points_to_plot = [(0.75, 1, '1')]
     # to_highlight = 0
-    # hyperparam = 0.0
+    # hyperparam = 1.0
 
-    # points_to_plot = [(0.77, 1, '2')]
+    # points_to_plot = [(0.74, 0.9, '2')]
     # to_highlight = 0
-    # hyperparam = 0.25
+    # hyperparam = 0.5
 
-    points_to_plot = [(0.78, 1, '1'), (0.77, 1, '2'), (0.73, 0.8, '3')]
+    points_to_plot = [(0.75, 1, '1'), (0.74, 0.9, '2'), (0.73, 0.8, '3')]
     to_highlight = 2
-    hyperparam = 0.5
+    hyperparam = 0.0
     
     annotation_text = [
         f"60% stake + {100*points_to_plot[to_highlight][0]:.0f}% utility",  # Bold by default (first line)
@@ -124,7 +124,7 @@ def visualize_data(emission_data, output_filename="consensus_plot.svg"):
         "retains 60% stake",
         f"[optimal cabal weight = {100*points_to_plot[to_highlight][1]:.0f}%]",
         "",  # Blank line
-        f"bond consensus level = {100*hyperparam:.0f}%"
+        f"median-mean interp. = {100*hyperparam:.0f}%"
     ]
     for i, line in enumerate(annotation_text):
         ax.text(0.1, 0.9 - 0.04 * i, line, 
@@ -152,7 +152,7 @@ def visualize_data(emission_data, output_filename="consensus_plot.svg"):
         ax.text(x,  0.5 - 0.1 * i, nr, **font_props)  # Numbered labels
     
     # Add title and labels
-    plt.title(f'Major emission [$S_{{maj}}=E_{{maj}}$] [$\\lambda={hyperparam:.2f}$]')
+    plt.title(f'Major emission [$S_{{maj}}=E_{{maj}}$] [$\\mu={hyperparam:.2f}$]')
     plt.ylabel('Minor self-weight')
     plt.xlabel('Major self-weight')
 

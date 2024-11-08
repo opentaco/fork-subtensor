@@ -280,6 +280,16 @@ We expect that more emission going to validators will improve security guarantee
 We set validation reward ratio at $\xi=0$, $0.25$, and $0.5$ and respectively observe 82%, 78%, 73% honest utility requirement for 60% honest stake preservation.
 This means that network security improves as the validation reward ratio is increased, although a significant server incentive ratio still needs to be maintained to ensure overall high utility.
 
+#### Median-mean interpolation (μ)
+Median consensus is unaffected by highly deviating minority stake, and is the primary layer of defence via adjustment of server incentive. However, if we also cut validator bonds at median consensus, honest minority servers with legitimate reasons for deviating weights may experience an unfair double penalty: (i) reduced server incentive to share in, and (ii) reduced bonding with servers.
+
+To address this, we can relax the median to a mean consensus for cutting the weights for the bonds calculations, according to ratio $\mu\in[0, 1]$. We see that this has relatively little impact on the overall security guarantees, only increasing honest utility requirement from 73\% to 75\%.
+
+<p align="center">
+ <img src="img/mu_100.svg" width="330">
+ <img src="img/mu_50.svg" width="330">
+ <img src="img/mu_0.svg" width="330">
+</p>
 
 ### Reproduce Consensus Plots (Runpod)
 

@@ -283,7 +283,7 @@ This means that network security improves as the validation reward ratio is incr
 #### Median-mean interpolation (μ)
 Median consensus is unaffected by highly deviating minority stake, and is the primary layer of defence via adjustment of server incentive. However, if we also cut validator bonds at median consensus, honest minority servers with legitimate reasons for deviating weights may experience an unfair double penalty: (i) reduced server incentive to share in, and (ii) reduced bonding with servers.
 
-To address this, we can relax the median to a mean consensus for cutting the weights for the bonds calculations, according to ratio $\mu\in[0, 1]$. We see that this has relatively little impact on the overall security guarantees, only increasing honest utility requirement from 73\% to 75\%.
+To address this, we can relax the median to a mean consensus for cutting the weights for the bonds calculations, according to ratio $\mu\in[0, 1]$. We see that this has relatively little impact on the overall security guarantees, only increasing honest utility requirement from 73\% to 75\%. However, the relief for honest minority validators would likely also be limited with this adjustment.
 
 <p align="center">
  <img src="img/mu_100.svg" width="330">

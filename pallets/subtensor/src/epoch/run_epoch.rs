@@ -224,19 +224,26 @@ impl<T: Config> Pallet<T> {
         // Compute preranks: r_j = SUM(i) w_ij * s_i
         let preranks: Vec<I32F32> = matmul(&weights, &active_stake);
 
-        // Clip weights at majority consensus
+        // Calculate mean and median weight consensus
+        let mean_consensus: Vec<I32F32> = weighted_mean_col(&active_stake, &weights_bonds);
         let kappa: I32F32 = Self::get_float_kappa(netuid); // consensus majority ratio, e.g. 51%.
-        let consensus: Vec<I32F32> = weighted_median_col(&active_stake, &weights, kappa);
+        let median_consensus: Vec<I32F32> = weighted_median_col(&active_stake, &weights, kappa);
+
+        // Interpolate between mean and median consensus
+        let mu: I32F32 = Self::get_float_mu(netuid); // Interpolation ratio between median and mean consensus for bonds
+        let consensus: Vec<I32F32> = vec_interp(&median_consensus, &mean_consensus, mu);
+
+        // Clip weights at majority consensus
         inplace_col_clip(&mut weights, &consensus);
 
         // Clip weights for bonds at majority consensus for bonds
         let lambda: I32F32 = Self::get_float_lambda(netuid); // consensus majority ratio for bonds, e.g. 51%.
-        let median_consensus: Vec<I32F32> = weighted_median_col(&active_stake, &weights_bonds, lambda);
-        let mean_consensus: Vec<I32F32> = weighted_mean_col(&active_stake, &weights_bonds);
+        let median_consensus_bonds: Vec<I32F32> = weighted_median_col(&active_stake, &weights_bonds, lambda);
 
-        let mu: I32F32 = Self::get_float_mu(netuid); // Interpolation ratio between median and mean consensus for bonds
-        let consensus_bonds: Vec<I32F32> = vec_interp(&median_consensus, &mean_consensus, mu);
+        // Interpolate between mean and median consensus
+        let consensus_bonds: Vec<I32F32> = vec_interp(&median_consensus_bonds, &mean_consensus, mu);
 
+        // Clip weights at majority consensus
         inplace_col_clip(&mut weights_bonds, &consensus_bonds);
         let validator_trust: Vec<I32F32> = row_sum(&weights_bonds);
 
@@ -579,22 +586,28 @@ impl<T: Config> Pallet<T> {
         let preranks: Vec<I32F32> = matmul_sparse(&weights, &active_stake, n);
         log::trace!("Ranks (before): {:?}", &preranks);
 
-        // Clip weights at majority consensus
+        // Calculate mean and median weight consensus
+        let mean_consensus: Vec<I32F32> = weighted_mean_col_sparse(&active_stake, &weights_bonds, n);
         let kappa: I32F32 = Self::get_float_kappa(netuid); // consensus majority ratio, e.g. 51%.
-        let consensus: Vec<I32F32> = weighted_median_col_sparse(&active_stake, &weights, n, kappa);
+        let median_consensus: Vec<I32F32> = weighted_median_col_sparse(&active_stake, &weights, n, kappa);
+
+        // Interpolate between mean and median consensus
+        let mu: I32F32 = Self::get_float_mu(netuid); // Interpolation ratio between median and mean consensus for bonds
+        let consensus: Vec<I32F32> = vec_interp(&median_consensus, &mean_consensus, mu);
         log::trace!("Consensus: {:?}", &consensus);
 
+        // Clip weights at majority consensus
         weights = col_clip_sparse(&weights, &consensus);
         log::trace!("Weights: {:?}", &weights);
 
         // Clip weights for bonds at majority consensus for bonds
         let lambda: I32F32 = Self::get_float_lambda(netuid); // consensus majority ratio for bonds, e.g. 51%.
-        let median_consensus: Vec<I32F32> = weighted_median_col_sparse(&active_stake, &weights_bonds, n, lambda);
-        let mean_consensus: Vec<I32F32> = weighted_mean_col_sparse(&active_stake, &weights_bonds, n);
+        let median_consensus_bonds: Vec<I32F32> = weighted_median_col_sparse(&active_stake, &weights_bonds, n, lambda);
 
-        let mu: I32F32 = Self::get_float_mu(netuid); // Interpolation ratio between median and mean consensus for bonds
-        let consensus_bonds: Vec<I32F32> = vec_interp(&median_consensus, &mean_consensus, mu);
+        // Interpolate between mean and median consensus
+        let consensus_bonds: Vec<I32F32> = vec_interp(&median_consensus_bonds, &mean_consensus, mu);
 
+        // Clip weights at majority consensus
         weights_bonds = col_clip_sparse(&weights_bonds, &consensus_bonds);
 
         let validator_trust: Vec<I32F32> = row_sum_sparse(&weights_bonds);
